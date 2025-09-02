@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 async function startServer() {
     try {
         // sicroniza os models com o banco
-        await sequelize.sync({ alter: true, force: true })
+        await sequelize.sync({ alter: true, force: false })
         console.log('Database models synchronized successfully.');
 
         // testa a conexão
