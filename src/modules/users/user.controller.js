@@ -95,7 +95,7 @@ static async updateUser(req, res, next) {
 
         // passando os campos
         const userId = req.user.id;
-        const { nome, email, password } = req.body;
+        const { name, email, password } = req.body;
 
         // procurando user por id 
         const findingUser = await User.findByPk(userId);
@@ -103,17 +103,18 @@ static async updateUser(req, res, next) {
             return res.status(404).json({ message: "User not found." })
         };
 
-        // passando os campos a serem atualizados
-
-        // hashando a senha com const global e deixando ela fora do retorno
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
+        // passando a possibilidade de alteração ou não:
+        const updatedFields = {};
+        if (name) updatedFields.name = name;
+        if (email) updatedFields.email = email;
+        if (password) { updatedFields.password = await bcrypt.hash(password, SALT_ROUNDS); }
+        
         // salvando as alterações
-        const user = await User.update(
-            { nome, email, password: hashedPassword },
+        const [rowsUpdated] = await User.update(
+            { ...updatedFields },
             { where: { id: userId } }
         );
-        if (user === 0) {
+        if (rowsUpdated === 0) {
             return res.status(400).json({ message: "No changes made to the user." });
         }
 
@@ -123,4 +124,33 @@ static async updateUser(req, res, next) {
         next(error);
     }};
 
+static async deleteUser(req, res, next) {
+    try {
+        const userId = req.user.id;
+
+        // buscando usuário pelo id:
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        await User.destroy({ where: { id: userId }});
+
+        res.status(200).json({ message: "User deleted successfully." });
+
+    } catch (error) {
+        next(error)
+    }};
+
+static async listUsers(req, res, next) {
+    try {
+        const users = await User.findAll({ attributes: { exclude: ['password'] }});
+
+        res.status(200).json({ listOfUsers: users });
+    } catch (error) {
+        next(error);
+    }};
+
 }
+
+export default UserController
