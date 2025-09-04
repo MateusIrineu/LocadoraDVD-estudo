@@ -11,7 +11,7 @@ try {
 
     // verifica se todos os campos foram preenchidos:
     if(!name || !email || !password) {
-        res.status(400).json({ message: "Name, email, and password are required." });
+        return res.status(400).json({ message: "Name, email, and password are required." });
     }
 
     // verificar se o email já existe:
@@ -112,7 +112,7 @@ static async updateUser(req, res, next) {
         // salvando as alterações
         const [rowsUpdated] = await User.update(
             { ...updatedFields },
-            { where: { id: userId } }
+            { where: { id: userId }}
         );
         if (rowsUpdated === 0) {
             return res.status(400).json({ message: "No changes made to the user." });
